@@ -45,6 +45,7 @@
             background-color: #0f0;
             animation: blink 1s step-start infinite;
         }
+
     </style>
 </head>
 <body>
@@ -57,7 +58,6 @@
 
     <div id="terminal"></div>
 
-    <!-- Bibliotheken -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/6.0.0/signalr.min.js"></script>
 
@@ -84,6 +84,8 @@
             const terminal = $('#terminal');
             const serverSelect = $('#serverSelect');
             const connectButton = $('#connectButton');
+            const disconnectButton = $('#disconnectButton');
+            const connectionAddButton = $('#connectionAddButton');
 
             const connection = new signalR.HubConnectionBuilder()
                 .withUrl('/ssh')
@@ -113,6 +115,41 @@
             disconnectButton.click(function () {
                 connection.invoke('Disconnect')
                     .catch(err => console.error(err.toString()));
+            });
+
+            connectionAddButton.click(function () {
+                const serverName = prompt("Bitte gib den Namen des Servers ein:");
+                const serverHost = prompt("Bitte gib die Host-Adresse ein:");
+                const serverPort = parseInt(prompt("Bitte gib den Port ein (Standard: 22):") || "22", 10);
+                const serverUsername = prompt("Benutzername:");
+                const serverPassword = prompt("Passwort:");
+                const serverSudoPassword = prompt("Sudo-Passwort (optional):");
+
+                if (serverHost && serverPort && serverUsername && serverPassword) {
+                    const newServer = {
+                        Host: serverHost,
+                        Port: serverPort,
+                        Username: serverUsername,
+                        Password: serverPassword,
+                        SudoPassword: serverSudoPassword
+                    };
+
+                    $.ajax({
+                        url: "/addServer",
+                        type: "POST",
+                        contentType: "application/json",
+                        data: JSON.stringify(newServer),
+                        success: function () {
+                            alert("Server erfolgreich hinzugefügt.");
+                            loadServers();
+                        },
+                        error: function (xhr) {
+                            alert("Fehler beim Hinzufügen: " + xhr.responseText);
+                        }
+                    });
+                } else {
+                    alert("Bitte alle Pflichtfelder ausfüllen.");
+                }
             });
 
             function appendToTerminal(text) {
