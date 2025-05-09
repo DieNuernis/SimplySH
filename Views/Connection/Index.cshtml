@@ -1,0 +1,103 @@
+﻿@{
+    ViewData["Title"] = "SSH-Webkonsole";
+}
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="utf-8" />
+    <title>SSH-Webkonsole</title>
+    <style>
+        body {
+            font-family: Consolas, monospace;
+            background-color: #1e1e1e;
+            color: #cccccc;
+            margin: 0;
+            padding: 0;
+        }
+
+        #terminal {
+            background-color: #000;
+            color: #0f0;
+            padding: 10px;
+            height: 400px;
+            overflow-y: auto;
+            white-space: pre-wrap;
+        }
+
+        #commandInput {
+            width: 100%;
+            padding: 8px;
+            border: none;
+            outline: none;
+            font-family: Consolas, monospace;
+            font-size: 1em;
+            box-sizing: border-box;
+        }
+
+        #sendButton {
+            display: none; /* Optional: wir nutzen Enter-Taste */
+        }
+    </style>
+</head>
+<body>
+    <div id="terminal"></div>
+    <input id="commandInput" type="text" placeholder="Befehl eingeben und Enter drücken" autofocus />
+    <br />
+    <input id="connectionName" type="text" placeholder="Verbindungsname eingeben" />
+    <button id="connectButton">Verbinden</button>
+
+    <!-- Bibliotheken -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/6.0.0/signalr.min.js"></script>
+
+    <script>
+        $(function () {
+            const terminal = $('#terminal');
+            const input = $('#commandInput');
+            const connectButton = $('#connectButton');
+            const connectionNameInput = $('#connectionName');
+
+            // SignalR-Verbindung aufbauen
+            const connection = new signalR.HubConnectionBuilder()
+                .withUrl('/ssh')
+                .build();
+
+            connection.start()
+                .then(() => {
+                    console.log("SignalR-Verbindung hergestellt");
+                })
+                .catch(err => console.error(err.toString()));
+
+            // Empfangene Ausgabe im Terminal anzeigen
+            connection.on('ReceiveOutput', function (message) {
+                terminal.text(terminal.text() + message);
+                terminal.scrollTop(terminal[0].scrollHeight);
+            });
+
+            // Verbindung herstellen
+            connectButton.click(function () {
+                const connectionName = connectionNameInput.val();
+                if (connectionName.trim().length > 0) {
+                    connection.invoke('Connect', connectionName)
+                        .catch(err => console.error(err.toString()));
+                }
+            });
+
+            // Enter-Taste abfangen und Befehl senden
+            input.keypress(function (e) {
+                if (e.which === 13) {
+                    const cmd = input.val();
+                    if (cmd.trim().length === 0) {
+                        input.val('');
+                        return;
+                    }
+                    terminal.text(terminal.text() + '$ ' + cmd + '\n');
+                    connection.invoke('SendCommand', cmd);
+                    input.val('');
+                    e.preventDefault();
+                }
+            });
+        });
+    </script>
+</body>
+</html>
