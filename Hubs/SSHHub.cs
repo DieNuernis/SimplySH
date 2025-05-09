@@ -12,21 +12,19 @@ namespace SimplySH.Hubs
         private readonly IHubContext<SSHHub> _hubContext;
         private readonly SSHSettings _settings;
 
-        // Hub-Konstruktor mit Zugriff auf Konfiguration und HubContext
         public SSHHub(IOptions<SSHSettings> sshOptions, IHubContext<SSHHub> hubContext)
         {
             _settings = sshOptions.Value;
             _hubContext = hubContext;
         }
 
-        // Wird vom Client aufgerufen, um eine SSH-Verbindung zu öffnen
         public async Task Connect(string connectionName)
         {
             try
             {
                 // Holen der Verbindungsdetails aus den Einstellungen
                 var connection = _settings.Connections.FirstOrDefault(c => c.Host == connectionName);
-
+                
                 if (connection == null)
                 {
                     await Clients.Caller.SendAsync("ReceiveOutput", "Verbindung nicht gefunden.\n");
@@ -61,7 +59,6 @@ namespace SimplySH.Hubs
                                 shellStream.Flush();
                                 continue;
                             }
-
                             await _hubContext.Clients.Client(connectionId)
                                 .SendAsync("ReceiveOutput", cleanOutput);
                         }
@@ -97,7 +94,7 @@ namespace SimplySH.Hubs
             }
         }
 
-        // Wird vom Client aufgerufen, um die SSH-Verbindung zu trennen
+
         public async Task Disconnect()
         {
             await SshSessionManager.RemoveSession(Context.ConnectionId);
