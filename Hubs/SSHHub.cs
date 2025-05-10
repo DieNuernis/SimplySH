@@ -24,10 +24,10 @@ namespace SimplySH.Hubs
             {
                 // Holen der Verbindungsdetails aus den Einstellungen
                 var connection = _settings.Connections.FirstOrDefault(c => c.Host == connectionName);
-                
+
                 if (connection == null)
                 {
-                    await Clients.Caller.SendAsync("ReceiveOutput", "Verbindung nicht gefunden.\n");
+                    await Clients.Caller.SendAsync("ReceiveOutput", "\n*** Verbindung nicht gefunden. ***\n");
                     return;
                 }
 
@@ -42,6 +42,7 @@ namespace SimplySH.Hubs
                 _ = Task.Run(async () =>
                 {
                     var buffer = new byte[4096];
+                    string lastOutput = ""; // Variable zur Vermeidung doppelter Ausgaben
                     while (client.IsConnected && shellStream.CanRead)
                     {
                         int bytesRead = shellStream.Read(buffer, 0, buffer.Length);
@@ -52,6 +53,14 @@ namespace SimplySH.Hubs
                             // ANSI Escape-Sequenzen entfernen
                             string cleanOutput = AnsiEscapeCodeCleaner.Clean(rawOutput);
 
+                            // Ausgabe nur senden, wenn sie sich von der letzten unterscheidet
+                            if (cleanOutput != lastOutput)
+                            {
+                                lastOutput = cleanOutput;
+                                await _hubContext.Clients.Client(connectionId)
+                                    .SendAsync("ReceiveOutput", cleanOutput);
+                            }
+
                             // Passwort automatisch senden, falls erforderlich
                             if (cleanOutput.ToLower().Contains("assword"))
                             {
@@ -59,8 +68,6 @@ namespace SimplySH.Hubs
                                 shellStream.Flush();
                                 continue;
                             }
-                            await _hubContext.Clients.Client(connectionId)
-                                .SendAsync("ReceiveOutput", cleanOutput);
                         }
 
                         await Task.Delay(20); // Sanftes Throttling
@@ -73,6 +80,7 @@ namespace SimplySH.Hubs
             }
         }
 
+
         // Empfängt einen Befehl vom Client und sendet ihn an den SSH-Stream
         public async Task SendCommand(string command)
         {
@@ -81,7 +89,7 @@ namespace SimplySH.Hubs
                 var stream = SshSessionManager.GetShellStream(Context.ConnectionId);
                 if (stream == null)
                 {
-                    await Clients.Caller.SendAsync("ReceiveOutput", "Keine SSH-Verbindung vorhanden.\n");
+                    await Clients.Caller.SendAsync("ReceiveOutput", "\n*** Keine SSH-Verbindung vorhanden. ***\n");
                     return;
                 }
 
@@ -92,13 +100,6 @@ namespace SimplySH.Hubs
             {
                 await Clients.Caller.SendAsync("ReceiveOutput", $"Fehler: {ex.Message}\n");
             }
-        }
-
-
-        public async Task Disconnect()
-        {
-            await SshSessionManager.RemoveSession(Context.ConnectionId);
-            await Clients.Caller.SendAsync("ReceiveOutput", "*** SSH-Verbindung getrennt ***\n");
         }
     }
 }

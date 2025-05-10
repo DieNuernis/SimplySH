@@ -28,24 +28,5 @@ namespace SimplySH.Utilities
             _clients.TryGetValue(connectionId, out var client);
             return client;
         }
-
-        // SSH-Session bereinigen und schließen
-        public static async Task RemoveSession(string connectionId)
-        {
-            if (_streams.TryRemove(connectionId, out var stream) && stream != null)
-            {
-                try { stream.Dispose(); } catch { }
-            }
-            if (_clients.TryRemove(connectionId, out var client) && client != null)
-            {
-                try
-                {
-                    client.Disconnect();
-                    client.Dispose();
-                }
-                catch { }
-            }
-            await Task.CompletedTask;
-        }
     }
 }

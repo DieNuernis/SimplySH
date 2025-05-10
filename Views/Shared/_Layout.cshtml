@@ -1,5 +1,5 @@
 ﻿<!DOCTYPE html>
-<html lang="en">
+<html lang="de">
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -7,40 +7,284 @@
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/SimplySH.styles.css" asp-append-version="true" />
+    <style>
+        body {
+            font-family: Consolas, monospace;
+            background-color: #1e1e1e;
+            color: #cccccc;
+            margin: 0;
+            padding: 0;
+        }
+
+        .navbar-custom {
+            background-color: #2c2c2c;
+        }
+
+            .navbar-custom .navbar-brand,
+            .navbar-custom .nav-link,
+            .navbar-custom .form-label {
+                color: #ffffff;
+            }
+
+            .navbar-custom .form-select,
+            .navbar-custom .btn,
+            .navbar-custom .form-control {
+                background-color: #3a3a3a;
+                color: #ffffff;
+                border: none;
+            }
+
+                .navbar-custom .btn:hover {
+                    background-color: #555;
+                }
+
+        #terminal {
+            background-color: #000;
+            color: #0f0;
+            padding: 10px;
+            height: 460px;
+            overflow-y: auto;
+            white-space: pre-wrap;
+            font-size: 0.8em;
+        }
+
+        .input-line {
+            display: inline;
+        }
+
+        .cursor {
+            display: inline-block;
+            width: 10px;
+            height: 1em;
+            background-color: #00ff00;
+            animation: blink 1s step-start infinite;
+        }
+
+        .dropdown-menu {
+            min-width: 220px;
+            padding: 1rem;
+            background-color: #1e1e1e;
+            color: #ffffff;
+        }
+
+        .color-picker-wrapper,
+        .font-size-wrapper {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 1rem;
+        }
+
+            .font-size-wrapper span {
+                margin-left: 0.5rem;
+                min-width: 32px;
+                display: inline-block;
+                text-align: right;
+            }
+
+        .dropdown-toggle {
+            white-space: nowrap;
+        }
+    </style>
 </head>
 <body>
     <header>
-        <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-light bg-white border-bottom box-shadow mb-3">
-            <div class="container-fluid">
-                <a class="navbar-brand" asp-area="" asp-controller="" asp-action="Index">SimplySH</a>
-                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target=".navbar-collapse" aria-controls="navbarSupportedContent"
-                        aria-expanded="false" aria-label="Toggle navigation">
-                    <span class="navbar-toggler-icon"></span>
-                </button>
-@*                 <div class="navbar-collapse collapse d-sm-inline-flex justify-content-between">
-                    <ul class="navbar-nav flex-grow-1">
-                        <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-controller="" asp-action="">SimplySH</a>
+        <nav class="navbar navbar-expand-lg navbar-dark bg-dark px-3">
+            <a class="navbar-brand" asp-area="" asp-controller="" asp-action="Index">SimplySH</a>
+
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarControls" aria-controls="navbarControls" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+
+            <div class="collapse navbar-collapse" id="navbarControls">
+                <form class="d-flex align-items-center flex-wrap gap-2 w-100 me-auto">
+                    <select id="serverSelect" class="form-select" style="max-width: 220px;">
+                        <option value="">- Server auswählen -</option>
+                    </select>
+                    <button id="connectionAddButton" type="button" class="btn btn-secondary">+</button>
+                    <button id="connectButton" type="button" class="btn btn-success">Verbinden</button>
+                </form>
+
+                <div class="dropdown ms-3">
+                    <button class="btn btn-outline-light dropdown-toggle" type="button" id="dropdownSettings" data-bs-toggle="dropdown" aria-expanded="false">
+                        Einstellungen
+                    </button>
+                    <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="dropdownSettings">
+                        <li class="color-picker-wrapper">
+                            <label for="colorPicker" class="form-label mb-0">Farbe:</label>
+                            <input type="color" id="colorPicker" value="#00ff00" class="form-control form-control-color border border-secondary">
+                        </li>
+                        <li class="font-size-wrapper">
+                            <label for="fontSizeRange" class="form-label mb-0">Schriftgröße:</label>
+                            <input type="range" class="form-range" min="12" max="30" step="1" id="fontSizeRange" style="width: 100px;">
+                            <span id="fontSizeValue">16</span>
                         </li>
                     </ul>
-                </div> *@
+                </div>
             </div>
         </nav>
     </header>
-    <div class="container">
-        <main role="main" class="pb-3">
-            @RenderBody()
-        </main>
+    <main role="main" class="pb-3">
+        @RenderBody()
+    </main>
+    <div class="container-fluid mt-3">
+        <div id="terminal"></div>
     </div>
-
-    <footer class="border-bottom footer text-muted">
+    <footer class="footer text-end text-light bg-dark py-2">
         <div class="container">
-            &copy; 2025 - SimplySH </a>
+            &copy; 2025 - SimplySH - by lukzthebest
         </div>
     </footer>
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/6.0.0/signalr.min.js"></script>
     <script src="~/js/site.js" asp-append-version="true"></script>
-    @await RenderSectionAsync("Scripts", required: false)
+    <script>
+        function loadServers() {
+            $.getJSON("/connections", function (data) {
+                const select = $('#serverSelect');
+                select.empty();
+                select.append('<option value="">- Server auswählen -</option>');
+                data.forEach(server => {
+                    const option = $('<option>').val(server.value).text(server.name);
+                    select.append(option);
+                });
+            }).fail(function () {
+                alert("Fehler beim Laden der Serverliste.");
+            });
+        }
+
+        $(function () {
+            loadServers();
+
+            const terminal = $('#terminal');
+            const serverSelect = $('#serverSelect');
+            const connectButton = $('#connectButton');
+            const connectionAddButton = $('#connectionAddButton');
+            const colorPicker = $('#colorPicker');
+            const fontSizeRange = $('#fontSizeRange');
+            const fontSizeValue = $('#fontSizeValue');
+
+            const connection = new signalR.HubConnectionBuilder().withUrl('/ssh').build();
+
+            connection.start()
+                .then(() => {
+                    console.log("SignalR-Verbindung hergestellt");
+                    appendPrompt();
+                })
+                .catch(err => console.error(err.toString()));
+
+            connection.on('ReceiveOutput', function (message) {
+                appendToTerminal(message);
+            });
+
+            connectButton.click(function () {
+                const selectedServer = serverSelect.val();
+                if (selectedServer.trim().length > 0) {
+                    connection.invoke('Connect', selectedServer).catch(err => console.error(err.toString()));
+                } else {
+                    alert("Bitte wähle einen Server aus.");
+                }
+            });
+
+            connectionAddButton.click(function () {
+                const serverName = prompt("Bitte gib den Namen des Servers ein:");
+                const serverHost = prompt("Bitte gib die Host-Adresse ein:");
+                const serverPort = parseInt(prompt("Bitte gib den Port ein (Standard: 22):") || "22", 10);
+                const serverUsername = prompt("Benutzername:");
+                const serverPassword = prompt("Passwort:");
+                const serverSudoPassword = prompt("Sudo-Passwort (optional):");
+
+                if (serverHost && serverPort && serverUsername && serverPassword) {
+                    const newServer = {
+                        Host: serverHost,
+                        Port: serverPort,
+                        Username: serverUsername,
+                        Password: serverPassword,
+                        SudoPassword: serverSudoPassword
+                    };
+
+                    $.ajax({
+                        url: "/addServer",
+                        type: "POST",
+                        contentType: "application/json",
+                        data: JSON.stringify(newServer),
+                        success: function () {
+                            alert("Server erfolgreich hinzugefügt.");
+                            loadServers();
+                        },
+                        error: function (xhr) {
+                            alert("Fehler beim Hinzufügen: " + xhr.responseText);
+                        }
+                    });
+                    loadServers();
+                } else {
+                    alert("Bitte alle Pflichtfelder ausfüllen.");
+                }
+            });
+
+          function appendToTerminal(text) {
+                const terminalContent = terminal.text();  // Holen des aktuellen Terminal-Inhalts
+                if (!terminalContent.includes(text)) {   // Nur hinzufügen, wenn der Text noch nicht vorhanden ist
+
+                    $('#input-line').before(document.createTextNode(text));
+                    scrollToBottom();
+                }
+            }
+
+
+            function appendPrompt() {
+                terminal.append('$ ');
+                const inputLine = $('<span id="input-line" class="input-line"></span>');
+                const cursor = $('<span class="cursor"></span>');
+                terminal.append(inputLine).append(cursor);
+                scrollToBottom();
+            }
+
+            function scrollToBottom() {
+                terminal.scrollTop(terminal[0].scrollHeight);
+            }
+
+            let commandBuffer = '';
+
+            $(document).on('keydown', function (e) {
+                const inputLine = $('#input-line');
+                if (e.key === 'Backspace') {
+                    e.preventDefault();
+                    commandBuffer = commandBuffer.slice(0, -1);
+                    inputLine.text(commandBuffer);
+                } else if (e.key === 'Enter') {
+                    e.preventDefault();
+                    $('#input-line').remove();
+                    $('.cursor').remove();
+                    terminal.append('\n');
+                    connection.invoke('SendCommand', commandBuffer).catch(err => console.error(err.toString()));
+                    commandBuffer = '';
+                    appendPrompt();
+                } else if (e.key.length === 1 && !e.ctrlKey && !e.metaKey) {
+                    e.preventDefault();
+                    commandBuffer += e.key;
+                    inputLine.text(commandBuffer);
+                }
+                scrollToBottom();
+            });
+
+            colorPicker.on('input', function () {
+                const color = $(this).val();
+                terminal.css('color', color);
+                $('.cursor').css('background-color', color);
+            });
+
+            fontSizeRange.on('input', function () {
+                const size = $(this).val();
+                terminal.css('font-size', size + 'px');
+                fontSizeValue.text(size);
+            });
+
+            // Initialwert setzen
+            fontSizeRange.val(14);
+            fontSizeValue.text(14);
+        });
+    </script>
 </body>
 </html>

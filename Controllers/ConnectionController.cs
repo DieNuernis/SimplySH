@@ -29,6 +29,7 @@ namespace SimplySH.Controllers
             var result = connections.Select(c => new { name = c.Host, value = c.Host });
             return Ok(result);
         }
+
         [HttpPost("addServer")]
         public IActionResult AddServer([FromBody] SSHConnection newServer)
         {
