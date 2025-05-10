@@ -25,9 +25,21 @@
             font-size: 0.8em;
         }
 
-        #serverSelect, #connectButton, #disconnectButton, #connectionAddButton {
-            margin: 10px;
+        #serverSelect, #connectButton, #disconnectButton {
+            margin: 5px;
             padding: 8px 12px;
+            font-family: Consolas, monospace;
+            font-size: 1em;
+        }
+
+        #connectionAddButton {
+            padding: 8px 25px;
+            font-family: Consolas, monospace;
+            font-size: 1em;
+        }
+
+       #colorPicker {     
+            padding: 8px 10px;
             font-family: Consolas, monospace;
             font-size: 1em;
         }
@@ -46,16 +58,18 @@
             background-color: #0f0;
             animation: blink 1s step-start infinite;
         }
-
     </style>
 </head>
 <body>
+
     <select id="serverSelect">
         <option value="">-- Server auswählen --</option>
     </select>
+    <button id="connectionAddButton">+</button>
     <button id="connectButton">Verbinden</button>
     <button id="disconnectButton">Trennen</button>
-    <button id="connectionAddButton">Neue Verbindung</button>
+    <label for="colorPicker" style="color: white;">Farbe:</label>
+    <input type="color" id="colorPicker" value="#00ff00" />
 
     <div id="terminal"></div>
 
@@ -87,6 +101,7 @@
             const connectButton = $('#connectButton');
             const disconnectButton = $('#disconnectButton');
             const connectionAddButton = $('#connectionAddButton');
+            const colorPicker = $('#colorPicker');
 
             const connection = new signalR.HubConnectionBuilder()
                 .withUrl('/ssh')
@@ -195,6 +210,12 @@
                     inputLine.text(commandBuffer);
                 }
                 scrollToBottom();
+            });
+
+            colorPicker.on('input', function () {
+                const color = $(this).val();
+                terminal.css('color', color);
+                $('.cursor').css('background-color', color);
             });
         });
     </script>
