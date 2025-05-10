@@ -22,9 +22,10 @@
             height: 400px;
             overflow-y: auto;
             white-space: pre-wrap;
+            font-size: 0.8em;
         }
 
-        #serverSelect, #connectButton, #disconnectButton {
+        #serverSelect, #connectButton, #disconnectButton, #connectionAddButton {
             margin: 10px;
             padding: 8px 12px;
             font-family: Consolas, monospace;
@@ -147,6 +148,7 @@
                             alert("Fehler beim Hinzufügen: " + xhr.responseText);
                         }
                     });
+                    loadServers();
                 } else {
                     alert("Bitte alle Pflichtfelder ausfüllen.");
                 }
