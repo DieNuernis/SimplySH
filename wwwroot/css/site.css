@@ -3,3 +3,80 @@
         background-color: transparent;
     }
 }
+body {
+    font-family: Consolas, monospace;
+    background-color: #1e1e1e;
+    color: #cccccc;
+    margin: 0;
+    padding: 0;
+}
+
+.navbar-custom {
+    background-color: #2c2c2c;
+}
+
+    .navbar-custom .navbar-brand,
+    .navbar-custom .nav-link,
+    .navbar-custom .form-label {
+        color: #ffffff;
+    }
+
+    .navbar-custom .form-select,
+    .navbar-custom .btn,
+    .navbar-custom .form-control {
+        background-color: #3a3a3a;
+        color: #ffffff;
+        border: none;
+    }
+
+        .navbar-custom .btn:hover {
+            background-color: #555;
+        }
+
+#terminal {
+    background-color: #000;
+    color: #0f0;
+    padding: 10px;
+    height: 460px;
+    overflow-y: auto;
+    white-space: pre-wrap;
+    font-size: 0.8em;
+}
+
+.input-line {
+    display: inline;
+}
+
+.cursor {
+    display: inline-block;
+    width: 10px;
+    height: 1em;
+    background-color: #00ff00;
+    animation: blink 1s step-start infinite;
+}
+
+.dropdown-menu {
+    min-width: 220px;
+    padding: 1rem;
+    background-color: #1e1e1e;
+    color: #ffffff;
+}
+
+.color-picker-wrapper,
+.font-size-wrapper {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 1rem;
+}
+
+    .font-size-wrapper span {
+        margin-left: 0.5rem;
+        min-width: 32px;
+        display: inline-block;
+        text-align: right;
+    }
+
+.dropdown-toggle {
+    white-space: nowrap;
+}

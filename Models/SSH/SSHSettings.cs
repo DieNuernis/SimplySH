@@ -1,7 +1,10 @@
-﻿namespace SimplySH.Models
+﻿using Microsoft.EntityFrameworkCore;
+
+namespace SimplySH.Models.SSH
 {
     public class SSHConnection
     {
+        public int Id { get; set; } // Unique identifier for the connection
         public string Host { get; set; }
         public int Port { get; set; }
         public string Username { get; set; }

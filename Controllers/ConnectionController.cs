@@ -1,8 +1,8 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using SimplySH.Models;
 using System.Text.Json.Nodes;
 using System.Text.Json;
 using static Org.BouncyCastle.Math.EC.ECCurve;
+using SimplySH.Models.SSH;
 
 namespace SimplySH.Controllers
 {
@@ -29,7 +29,6 @@ namespace SimplySH.Controllers
             var result = connections.Select(c => new { name = c.Host, value = c.Host });
             return Ok(result);
         }
-
         [HttpPost("addServer")]
         public IActionResult AddServer([FromBody] SSHConnection newServer)
         {

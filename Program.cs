@@ -1,13 +1,19 @@
-using Microsoft.AspNetCore.Builder;
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.DependencyInjection;
+using Microsoft.EntityFrameworkCore;
+using SimplySH.Data;
 using SimplySH.Hubs;
-using SimplySH.Models;
+using SimplySH.Models.SSH;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // SSH-Konfigurationswerte aus appsettings.json laden
 builder.Services.Configure<SSHSettings>(builder.Configuration.GetSection("Ssh"));
+
+// SSH-Konfigurationswerte aus Datenbank laden
+builder.Services.AddDbContext<MyDBContext>(options =>
+    options.UseMySql(
+        builder.Configuration.GetConnectionString("DefaultConnection"),
+        ServerVersion.AutoDetect(builder.Configuration.GetConnectionString("DefaultConnection"))
+    ));
 
 // MVC und SignalR-Dienste registrieren
 builder.Services.AddControllersWithViews();
