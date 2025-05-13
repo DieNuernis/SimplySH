@@ -7,6 +7,7 @@ namespace SimplySH.Models.SSH
     {
         [Key]
         public int Id { get; set; }
+        public string OwnerId { get; set; }  // ForeignKey zu IdentityUser
 
         [Required]
         public string Host { get; set; }

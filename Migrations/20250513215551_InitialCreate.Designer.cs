@@ -12,7 +12,7 @@ using SimplySH.Data;
 namespace SimplySH.Migrations
 {
     [DbContext(typeof(MyDBContext))]
-    [Migration("20250513184308_InitialCreate")]
+    [Migration("20250513215551_InitialCreate")]
     partial class InitialCreate
     {
         /// <inheritdoc />
@@ -240,6 +240,10 @@ namespace SimplySH.Migrations
                     MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));
 
                     b.Property<string>("Host")
+                        .IsRequired()
+                        .HasColumnType("longtext");
+
+                    b.Property<string>("OwnerId")
                         .IsRequired()
                         .HasColumnType("longtext");
 

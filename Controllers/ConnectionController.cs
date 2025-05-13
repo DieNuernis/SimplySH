@@ -23,7 +23,10 @@ public class ConnectionController : Controller
     [HttpGet("connections")]
     public IActionResult GetConnections()
     {
+        string userId = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+
         var connections = _context.SSHConnections
+            .Where(c => c.OwnerId == userId)
             .Select(c => new { name = c.Host, value = c.Host })
             .ToList();
 
@@ -36,6 +39,9 @@ public class ConnectionController : Controller
     {
         try
         {
+            string userId = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+            newServer.OwnerId = userId;
+
             _context.SSHConnections.Add(newServer);
             await _context.SaveChangesAsync();
 
