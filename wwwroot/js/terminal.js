@@ -150,6 +150,7 @@ function initializeEventListeners() {
         $('.cursor').css('background-color', color);
     });
 
+
     fontSizeRange.on('input', function () {
         const size = $(this).val();
         $('#terminal').css('font-size', size + 'px');

@@ -1,9 +1,24 @@
-﻿@keyframes blink {
+﻿:root {
+    --accent-color: #00ff99;
+    --accent-color-dark: #00cc88;
+}
+
+@keyframes blink {
     50% {
         opacity: 0;
     }
 }
-
+/* Animation */
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
 body {
     height: 100%;
     margin: 0;
@@ -214,15 +229,4 @@ body {
     text-decoration: underline;
 }
 
-/* Animation */
-@keyframes fadeIn {
-    from {
-        opacity: 0;
-        transform: translateY(20px);
-    }
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
-}
 
