@@ -1,9 +1,11 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
-VisualStudioVersion = 17.13.35931.197 d17.13
+VisualStudioVersion = 17.13.35931.197
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SimplySH", "SimplySH.csproj", "{CBFE86E5-0FF8-428D-CE2A-4F653591EFFB}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SimplySHClient", "..\SimplySHClient\SimplySHClient.csproj", "{75C43F7C-A146-4406-B311-E906F41E3902}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -15,6 +17,10 @@ Global
 		{CBFE86E5-0FF8-428D-CE2A-4F653591EFFB}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{CBFE86E5-0FF8-428D-CE2A-4F653591EFFB}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{CBFE86E5-0FF8-428D-CE2A-4F653591EFFB}.Release|Any CPU.Build.0 = Release|Any CPU
+		{75C43F7C-A146-4406-B311-E906F41E3902}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{75C43F7C-A146-4406-B311-E906F41E3902}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{75C43F7C-A146-4406-B311-E906F41E3902}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{75C43F7C-A146-4406-B311-E906F41E3902}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

@@ -1,67 +1,49 @@
-﻿using Microsoft.AspNetCore.Mvc;
-using SimplySH.Models;
-using System.Text.Json.Nodes;
-using System.Text.Json;
-using static Org.BouncyCastle.Math.EC.ECCurve;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
+using SimplySH.Data;
+using SimplySH.Models.SSH;
 
-namespace SimplySH.Controllers
+[Authorize]
+public class ConnectionController : Controller
 {
-    public class ConnectionController : Controller
+    private readonly MyDBContext _context;
+
+    public ConnectionController(MyDBContext context)
     {
-        private readonly IConfiguration _config;
-        private readonly IWebHostEnvironment _env;
+        _context = context;
+    }
 
-        public ConnectionController(IConfiguration config, IWebHostEnvironment env)
+    // Hauptansicht
+    public IActionResult Index()
+    {
+        return View();
+    }
+
+    // Verfügbare Verbindungen aus der Datenbank abrufen
+    [HttpGet("connections")]
+    public IActionResult GetConnections()
+    {
+        var connections = _context.SSHConnections
+            .Select(c => new { name = c.Host, value = c.Host })
+            .ToList();
+
+        return Ok(connections);
+    }
+
+    // Neue Verbindung zur Datenbank hinzufügen
+    [HttpPost("addServer")]
+    public async Task<IActionResult> AddServerToDB([FromBody] SSHConnection newServer)
+    {
+        try
         {
-            _config = config;
-            _env = env;
+            _context.SSHConnections.Add(newServer);
+            await _context.SaveChangesAsync();
+
+            return Ok(newServer);
         }
-
-        // Liste aller Verbindungen
-        public IActionResult Index()
+        catch (Exception ex)
         {
-            return View();
-        }
-        [HttpGet("connections")]
-        public IActionResult GetConnections()
-        {
-            var connections = _config.GetSection("Ssh:Connections").Get<List<SSHConnection>>();
-            var result = connections.Select(c => new { name = c.Host, value = c.Host });
-            return Ok(result);
-        }
-        [HttpPost("addServer")]
-        public IActionResult AddServer([FromBody] SSHConnection newServer)
-        {
-            try
-            {
-                var filePath = Path.Combine(_env.ContentRootPath, "appsettings.json");
-                var json = System.IO.File.ReadAllText(filePath);
-                var jsonObj = JsonNode.Parse(json);
-
-                var connections = jsonObj?["Ssh"]?["Connections"]?.AsArray() ?? new JsonArray();
-
-                var newConnection = new JsonObject
-                {
-                    ["Host"] = newServer.Host,
-                    ["Port"] = newServer.Port,
-                    ["Username"] = newServer.Username,
-                    ["Password"] = newServer.Password,
-                    ["SudoPassword"] = newServer.SudoPassword ?? ""
-                };
-
-                connections.Add(newConnection);
-
-                jsonObj["Ssh"]["Connections"] = connections;
-
-                var newJson = JsonSerializer.Serialize(jsonObj, new JsonSerializerOptions { WriteIndented = true });
-                System.IO.File.WriteAllText(filePath, newJson);
-
-                return Ok(newServer);
-            }
-            catch (Exception ex)
-            {
-                return BadRequest($"Fehler: {ex.Message}");
-            }
+            return BadRequest($"Fehler beim Speichern in die Datenbank: {ex.Message}");
         }
     }
 }

@@ -1,0 +1,14 @@
+﻿@page
+@model LogoutModel
+@{
+}
+
+<header>
+    <h1>@ViewData["Title"]</h1>
+    @{
+        if (!User.Identity?.IsAuthenticated ?? false)
+        {
+            <p>You have successfully logged out of the application.</p>
+        }
+    }
+</header>
