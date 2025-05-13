@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.SignalR;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
 using Renci.SshNet;
 using SimplySH.Data;
@@ -8,6 +9,7 @@ using System.Text;
 
 namespace SimplySH.Hubs
 {
+    [Authorize]
     public class SSHHub : Hub
     {
         private readonly IHubContext<SSHHub> _hubContext;

@@ -1,7 +1,9 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using SimplySH.Data;
 using SimplySH.Models.SSH;
 
+[Authorize]
 public class ConnectionController : Controller
 {
     private readonly MyDBContext _context;
