@@ -41,7 +41,6 @@ namespace SimplySH.Migrations
                         .HasColumnType("int");
 
                     b.Property<string>("SudoPassword")
-                        .IsRequired()
                         .HasColumnType("longtext");
 
                     b.Property<string>("Username")
@@ -50,7 +49,7 @@ namespace SimplySH.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Connections");
+                    b.ToTable("SSHConnections");
                 });
 #pragma warning restore 612, 618
         }

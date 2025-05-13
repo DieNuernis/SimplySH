@@ -15,7 +15,7 @@ namespace SimplySH.Migrations
                 .Annotation("MySql:CharSet", "utf8mb4");
 
             migrationBuilder.CreateTable(
-                name: "Connections",
+                name: "SSHConnections",
                 columns: table => new
                 {
                     Id = table.Column<int>(type: "int", nullable: false)
@@ -27,12 +27,12 @@ namespace SimplySH.Migrations
                         .Annotation("MySql:CharSet", "utf8mb4"),
                     Password = table.Column<string>(type: "longtext", nullable: false)
                         .Annotation("MySql:CharSet", "utf8mb4"),
-                    SudoPassword = table.Column<string>(type: "longtext", nullable: false)
+                    SudoPassword = table.Column<string>(type: "longtext", nullable: true)
                         .Annotation("MySql:CharSet", "utf8mb4")
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_Connections", x => x.Id);
+                    table.PrimaryKey("PK_SSHConnections", x => x.Id);
                 })
                 .Annotation("MySql:CharSet", "utf8mb4");
         }
@@ -41,7 +41,7 @@ namespace SimplySH.Migrations
         protected override void Down(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.DropTable(
-                name: "Connections");
+                name: "SSHConnections");
         }
     }
 }

@@ -131,8 +131,9 @@
                         SudoPassword: serverSudoPassword
                     };
 
+                    // Nur in DB speichern
                     $.ajax({
-                        url: "/addServer",
+                        url: "addServer",
                         type: "POST",
                         contentType: "application/json",
                         data: JSON.stringify(newServer),
@@ -141,10 +142,9 @@
                             loadServers();
                         },
                         error: function (xhr) {
-                            alert("Fehler beim Hinzufügen: " + xhr.responseText);
+                            alert("Fehler beim Hinzufügen in die Datenbank: " + xhr.responseText);
                         }
                     });
-                    loadServers();
                 } else {
                     alert("Bitte alle Pflichtfelder ausfüllen.");
                 }

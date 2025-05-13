@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.SignalR;
-using Microsoft.Extensions.Options;
+using Microsoft.EntityFrameworkCore;
 using Renci.SshNet;
+using SimplySH.Data;
 using SimplySH.Models.SSH;
 using SimplySH.Utilities;
 using System.Text;
@@ -10,11 +11,11 @@ namespace SimplySH.Hubs
     public class SSHHub : Hub
     {
         private readonly IHubContext<SSHHub> _hubContext;
-        private readonly SSHSettings _settings;
+        private readonly MyDBContext _db;
 
-        public SSHHub(IOptions<SSHSettings> sshOptions, IHubContext<SSHHub> hubContext)
+        public SSHHub(MyDBContext db, IHubContext<SSHHub> hubContext)
         {
-            _settings = sshOptions.Value;
+            _db = db;
             _hubContext = hubContext;
         }
 
@@ -22,7 +23,9 @@ namespace SimplySH.Hubs
         {
             try
             {
-                var connection = _settings.Connections.FirstOrDefault(c => c.Host == connectionName);
+                var connection = await _db.SSHConnections
+                    .AsNoTracking()
+                    .FirstOrDefaultAsync(c => c.Host == connectionName);
 
                 if (connection == null)
                 {
@@ -31,7 +34,15 @@ namespace SimplySH.Hubs
                 }
 
                 var client = new SshClient(connection.Host, connection.Port, connection.Username, connection.Password);
-                client.Connect();
+                try
+                {
+                    client.Connect();
+                }
+                catch (Exception ex)
+                {
+                    await Clients.Caller.SendAsync("ReceiveOutput", $"Verbindungsfehler: {ex.Message}\n");
+                    return;
+                }
 
                 var shellStream = client.CreateShellStream("xterm", 80, 24, 800, 600, 4096);
                 SshSessionManager.Register(Context.ConnectionId, client, shellStream);
@@ -41,7 +52,6 @@ namespace SimplySH.Hubs
                 _ = Task.Run(async () =>
                 {
                     var buffer = new byte[4096];
-                    string lastOutput = string.Empty;
 
                     while (client.IsConnected && shellStream.CanRead)
                     {
@@ -51,17 +61,16 @@ namespace SimplySH.Hubs
                             string rawOutput = Encoding.UTF8.GetString(buffer, 0, bytesRead);
                             string cleanOutput = AnsiEscapeCodeCleaner.Clean(rawOutput);
 
-                            if (!string.Equals(cleanOutput, lastOutput))
+                            if (!string.IsNullOrWhiteSpace(cleanOutput))
                             {
-                                lastOutput = cleanOutput;
                                 await _hubContext.Clients.Client(connectionId)
                                     .SendAsync("ReceiveOutput", cleanOutput);
-                            }
 
-                            if (cleanOutput.ToLower().Contains("assword"))
-                            {
-                                shellStream.WriteLine(connection.SudoPassword);
-                                shellStream.Flush();
+                                if (cleanOutput.ToLower().Contains("assword"))
+                                {
+                                    shellStream.WriteLine(connection.SudoPassword);
+                                    shellStream.Flush();
+                                }
                             }
                         }
 

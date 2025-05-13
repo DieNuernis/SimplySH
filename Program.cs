@@ -5,15 +5,14 @@ using SimplySH.Models.SSH;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// SSH-Konfigurationswerte aus appsettings.json laden
-builder.Services.Configure<SSHSettings>(builder.Configuration.GetSection("Ssh"));
-
 // SSH-Konfigurationswerte aus Datenbank laden
 builder.Services.AddDbContext<MyDBContext>(options =>
     options.UseMySql(
         builder.Configuration.GetConnectionString("DefaultConnection"),
-        ServerVersion.AutoDetect(builder.Configuration.GetConnectionString("DefaultConnection"))
-    ));
+        new MySqlServerVersion(new Version(8, 0, 36))
+    ).EnableDetailedErrors()
+     .EnableSensitiveDataLogging()
+);
 
 // MVC und SignalR-Dienste registrieren
 builder.Services.AddControllersWithViews();

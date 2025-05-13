@@ -11,6 +11,6 @@ namespace SimplySH.Data
         {
         }
 
-        public DbSet<SSHConnection> Connections { get; set; }
+        public DbSet<SSHConnection> SSHConnections { get; set; }
     }
 }
