@@ -24,6 +24,38 @@ function loadServers() {
     });
 }
 
+function loadPreferences() {
+    return $.getJSON("/api/UserPreferences")
+        .done(prefs => {
+            $('#colorPicker').val(prefs.color);
+            $('#terminal').css('color', prefs.color);
+            $('.cursor').css('background-color', prefs.color);
+
+            $('#fontSizeRange').val(prefs.fontSize);
+            $('#fontSizeValue').text(prefs.fontSize);
+            $('#terminal').css('font-size', prefs.fontSize + 'px');
+        })
+        .fail(() => {
+            console.warn("Konnte Benutzerpräferenzen nicht laden.");
+        });
+}
+
+function savePreferences() {
+    const prefs = {
+        color: $('#colorPicker').val(),
+        fontSize: parseInt($('#fontSizeRange').val(), 10)
+    };
+
+    return $.ajax({
+        url: '/api/UserPreferences',
+        type: 'POST',
+        contentType: 'application/json',
+        data: JSON.stringify(prefs)
+    }).fail(() => {
+        console.warn("Fehler beim Speichern der Benutzerpräferenzen.");
+    });
+}
+
 let connection;
 let commandBuffer = '';
 
@@ -148,21 +180,21 @@ function initializeEventListeners() {
         const color = $(this).val();
         $('#terminal').css('color', color);
         $('.cursor').css('background-color', color);
+        savePreferences();
     });
-
 
     fontSizeRange.on('input', function () {
         const size = $(this).val();
         $('#terminal').css('font-size', size + 'px');
         fontSizeValue.text(size);
+        savePreferences();
     });
-
-    fontSizeRange.val(16);
-    fontSizeValue.text(16);
 }
 
 $(function () {
     loadServers();
-    initializeSignalR();
-    initializeEventListeners();
+    loadPreferences().then(() => {
+        initializeSignalR();
+        initializeEventListeners();
+    });
 });
